@@ -64,7 +64,7 @@ func addRoute(api huma.API) {
 		Method:      http.MethodPost,
 		Path:        "/ping",
 	}, func(ctx context.Context, input *PingInput) (*PingOutput, error) {
-		doWork(input)
+		doWork(input.RawBody)
 		resp := &PingOutput{}
 		resp.Body.Message = fmt.Sprintf("Hello, %s!", input.Body.Name)
 		return resp, nil
@@ -72,8 +72,7 @@ func addRoute(api huma.API) {
 
 }
 
-func doWork(input *PingInput) {
-	rawBody := input.RawBody
-	rawBody[2] = 0x41
+func doWork(input []byte) {
+	log.Printf("Doing work with input: %s\n", string(input))
 	time.Sleep(4 * time.Second)
 }
