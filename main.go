@@ -25,10 +25,14 @@ type PingInput struct {
 	RawBody []byte
 }
 
+type PingResponse struct {
+	Message string `json:"message" doc:"Greeting message" example:"Hello, world!"`
+	Ping    Ping   `json:"ping"`
+	PingRaw []byte `json:"ping-raw"`
+}
+
 type PingOutput struct {
-	Body struct {
-		Message string `json:"message" doc:"Greeting message" example:"Hello, world!"`
-	}
+	Body PingResponse `json:"body" doc:"response body"`
 }
 
 func main() {
@@ -67,6 +71,8 @@ func addRoute(api huma.API) {
 		doWork(input.RawBody)
 		resp := &PingOutput{}
 		resp.Body.Message = fmt.Sprintf("Hello, %s!", input.Body.Name)
+		resp.Body.Ping = input.Body
+		resp.Body.PingRaw = input.RawBody
 		return resp, nil
 	})
 
@@ -74,5 +80,8 @@ func addRoute(api huma.API) {
 
 func doWork(input []byte) {
 	log.Printf("Doing work with input: %s\n", string(input))
+	input[1] = 0x44
+	input = append(input, 0x45)
+	log.Printf("Working with input length: %d\n", len(input))
 	time.Sleep(4 * time.Second)
 }

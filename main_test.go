@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"math/rand"
 	"testing"
 
@@ -24,10 +27,21 @@ func TestPing(t *testing.T) {
 		t.Run(fmt.Sprintf("tc-%d", i), func(t *testing.T) {
 			t.Parallel()
 			ping := generateRandomPing()
+			pingByte, _ := json.Marshal(ping)
 			resp := api.Post("/ping", ping)
 			t.Logf("Response: %s", resp.Body)
 			if resp.Code != 200 {
 				t.Fatalf("Expected status 200, got %d", resp.Code)
+			}
+			var data PingResponse
+			body, _ := io.ReadAll(resp.Body)
+			if err := json.Unmarshal(body, &data); err != nil {
+				t.Fatalf("Error unmarshalling response: %s", err)
+			}
+			if len(pingByte) != len(data.PingRaw) {
+				log.Printf("input: %s\n", string(pingByte))
+				log.Printf("output: %s\n", string(data.PingRaw))
+				log.Fatal("input byte is not same length as output byte")
 			}
 		})
 	}
